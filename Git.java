@@ -1,6 +1,10 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -157,4 +161,60 @@ public class Git {
     }
 
 
+
+    public static void addToIndex(String filePath) {
+    try {
+        File indexFile = new File("git", "index");
+            if (!indexFile.exists()) {
+                indexFile.getParentFile().mkdirs();
+                indexFile.createNewFile();
+            }
+
+            String hash = sha1FromFile(filePath);
+            String name = new File(filePath).getName();
+            String entry = hash + " " + name;
+
+            boolean endsWithNewline = false;
+            if (indexFile.length() > 0) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(indexFile))) {
+                    String line;
+                    String lastLine = null;
+                    while ((line = reader.readLine()) != null) {
+                        lastLine = line;
+                    }
+                    if (lastLine == null || lineEndsWithNewline(indexFile)) {
+                        endsWithNewline = true;
+                    }
+                }
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(indexFile, true))) {
+                if (indexFile.length() == 0) {
+                    writer.write(entry);
+                } 
+                else if (endsWithNewline) {
+                    writer.write(entry);
+                } 
+                else {
+                    writer.newLine();
+                    writer.write(entry);
+                }
+            }
+
+        }  
+        catch (IOException e) {
+            throw new RuntimeException("Error updating index", e);
+        }
+    }
+
+    private static boolean lineEndsWithNewline(File file) throws IOException {
+        if (file.length() == 0) {
+            return false;
+        }
+        try (FileInputStream in = new FileInputStream(file)) {
+            in.skip(file.length() - 1);
+            return in.read() == '\n';
+        }
+    }
+    
 }
