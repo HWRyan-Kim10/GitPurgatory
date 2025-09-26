@@ -1,5 +1,11 @@
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Git {
 
@@ -44,4 +50,47 @@ public class Git {
             System.out.println("Git Repository Created");
         }
     }
+
+
+    public static String encryptThisString(String input) {
+        try {
+            // getInstance() method is called with algorithm SHA-1
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+
+            // digest() method is called
+            // to calculate message digest of the input string
+            // returned as array of byte
+            byte[] messageDigest = md.digest(input.getBytes());
+
+            // Convert byte array into signum representation
+            BigInteger no = new BigInteger(1, messageDigest);
+
+            // Convert message digest into hex value
+            String hashtext = no.toString(16);
+
+            // Add preceding 0s to make it 40 digits long
+            while (hashtext.length() < 40) {
+                hashtext = "0" + hashtext;
+            }
+
+            // return the HashText
+            return hashtext;
+        }
+
+        // For specifying wrong message digest algorithms
+        catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String sha1FromFile(String filePath) {
+        try {
+            String content = Files.readString(Path.of(filePath), StandardCharsets.UTF_8);
+            return encryptThisString(content);
+        } 
+        catch (Exception e) {
+            throw new RuntimeException("Error reading file: " + filePath, e);
+        }
+    }
+
 }
