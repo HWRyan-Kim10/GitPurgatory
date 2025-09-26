@@ -7,7 +7,12 @@
 2.2
 - The method encryptThisString performs a SHA1 hash on whatever string is the input and I pulled it from the following link: https://www.geeksforgeeks.org/java/sha-1-hash-in-java/
 - The method sha1FromFile takes the path of the file that you are trying to hash and converts the contents into a string (it does so by using the encryptThisString method). I learned about the readString method at this link: https://www.geeksforgeeks.org/java/files-class-readstring-method-in-java-with-examples/ 
-- I made hello.txt for the tester of these two methods. Inside of hello.txt are the words hello world so I compared the output of the sha1FromFile method to the sha1 string converter link provided on the assignment.
+- I made shaone.txt for the tester of these two methods. Inside of shaone.txt is the word shaone so I compared the output of the sha1FromFile method to the sha1 string converter link provided on the assignment.
+
+2.3
+- At the beginning of createBlob, the method checks to see if the objects directory exists under the git directory to make sure that it has a place to store the blobs. The sha1FromFile method is then called and a new blobFile with the hash as its name goes under the objects directory. Inside the try catch the method checks to see if the blobFile already exists and if it doesn't it calls the copy content method. This method copies the contents of the initial file to the blob file and I found this method on this link: https://www.geeksforgeeks.org/java/different-ways-to-copy-content-from-one-file-to-another-file-in-java/
+- In the tester resetForRetest() was made to perform cleanup and then make sure simple test files were created for each test loop (hello.txt and world.txt). This is done by using the new createTestFile method which uses file writer. The method verifyBlobExists checks if a blob file for a given file path exists inside git/objects. It first confirms the objects folder is there, then calculates the SHA-1 hash of the file’s contents using Git.sha1FromFile. That hash is the expected filename of the blob. Finally, it prints PASS if the blob file exists, or FAIL if it doesn’t. 
+
 
 
 

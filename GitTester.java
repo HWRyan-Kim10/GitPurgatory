@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class GitTester {
     public static void verifyInit() {
@@ -33,18 +35,61 @@ public class GitTester {
     }
 
 
+    public static void verifyBlobExists(String filePath) {
+        File objectsDir = new File("git", "objects");
+        if (!objectsDir.exists()) {
+            System.out.println("Blob Verification: FAIL (objects directory missing)");
+            return;
+        }
 
+        String expectedHash = Git.sha1FromFile(filePath);
+        File blobFile = new File(objectsDir, expectedHash);
+
+        if(blobFile.exists()) {
+            System.out.println("Blob Verification: PASS (" + expectedHash + " found in objects)");
+        } 
+        else {
+            System.out.println("Blob Verification: FAIL (" + expectedHash + " not found in objects)");
+        }
+    }
+
+    public static void resetForRetest() {
+        cleanup();
+
+        createTestFile("hello.txt", "hello\n");
+        createTestFile("world.txt", "world\n");
+
+        System.out.println("Reset complete.");
+    }
+
+
+    private static void createTestFile(String name, String content) {
+        try (FileWriter fw = new FileWriter(name)){
+            fw.write(content);
+        } 
+        catch (IOException e) {
+            System.out.println("Error creating " + name + ": " + e.getMessage());
+        }
+    }
 
 
     public static void main(String[] args){
+        resetForRetest();
+
         for (int i = 1; i <= 3; i++) {
-            System.out.println("\nCycle " + i + ":");
             Git.init();
             verifyInit();
-            cleanup();
+
+            Git.createBlob("hello.txt");
+            Git.createBlob("world.txt");
+
+            verifyBlobExists("hello.txt");
+            verifyBlobExists("world.txt");
+
+            resetForRetest();
         }
 
-        String hash = Git.sha1FromFile("hello.txt");
+        String hash = Git.sha1FromFile("shaone.txt");
         System.out.println("SHA1 of file contents: " + hash);
     }
 
