@@ -32,6 +32,10 @@ public class GitTester {
         file.delete();
     }
 
+
+
+
+
     public static void main(String[] args){
         for (int i = 1; i <= 3; i++) {
             System.out.println("\nCycle " + i + ":");
@@ -39,5 +43,9 @@ public class GitTester {
             verifyInit();
             cleanup();
         }
+
+        String hash = Git.sha1FromFile("hello.txt");
+        System.out.println("SHA1 of file contents: " + hash);
     }
+
 }
