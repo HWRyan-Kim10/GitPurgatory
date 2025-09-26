@@ -233,6 +233,7 @@ public class GitTester {
         runIndexSuite();
         resetWorkspace();
         runIndexSuite();
+        resetWorkspace();
     }
 
 
