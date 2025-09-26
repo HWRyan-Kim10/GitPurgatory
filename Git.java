@@ -1,9 +1,12 @@
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -92,5 +95,66 @@ public class Git {
             throw new RuntimeException("Error reading file: " + filePath, e);
         }
     }
+
+    public static void createBlob(String filePath) {
+        File gitDir = new File("git");
+        File objectsDir = new File(gitDir, "objects");
+        if (!objectsDir.exists()) {
+            init();
+        }
+
+        String hash = sha1FromFile(filePath);
+
+        File blobFile = new File(objectsDir, hash);
+
+        try {
+            if (blobFile.exists()) {
+                System.out.println("Blob already exists: " + hash);
+                return;
+            }
+    
+            copyContent(new File(filePath), blobFile);
+    
+            System.out.println("Blob created: " + hash);
+        } 
+        catch (Exception e) {
+            System.out.println("Error creating blob: " + e.getMessage());
+        }
+    }
+
+    
+    public static void copyContent(File a, File b)
+        throws Exception
+    {
+        FileInputStream in = new FileInputStream(a);
+        FileOutputStream out = new FileOutputStream(b);
+
+        try {
+
+            int n;
+
+            // read() function to read the
+            // byte of data
+            while ((n = in.read()) != -1) {
+                // write() function to write
+                // the byte of data
+                out.write(n);
+            }
+        }
+        finally {
+            if (in != null) {
+
+                // close() function to close the
+                // stream
+                in.close();
+            }
+            // close() function to close
+            // the stream
+            if (out != null) {
+                out.close();
+            }
+        }
+    }
+
 
 }
