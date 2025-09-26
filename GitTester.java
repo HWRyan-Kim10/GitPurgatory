@@ -89,7 +89,10 @@ public class GitTester {
             {"gamma.txt",   "The quick brown fox\njumps over the lazy dog\n"},
             {"delta.txt",   ""}
         };
-        for (String[] s : samples) createTextFile(s[0], s[1]);
+        for (String[] s : samples) {
+            createTextFile(s[0], s[1]);
+        }
+        
 
         for (String[] s : samples) {
             String name = s[0];
@@ -111,7 +114,7 @@ public class GitTester {
     private static boolean verifyIndexMatches(String[][] samples) {
         List<String> expected = new ArrayList<>();
         for (String[] s : samples) {
-            String name = s[0];
+            String name = new File(s[0]).getPath();;
             String hash = Git.sha1FromFile(name);
             expected.add(hash + " " + name);
         }
@@ -137,11 +140,11 @@ public class GitTester {
 
     private static void dumpDiff(List<String> expected, List<String> actual) {
         System.out.println("---- Expected ----");
-        for (String s : expected) {
+        for (String s: expected) {
             System.out.println(s);
         }
         System.out.println("---- Actual   ----");
-        for (String s : actual) {
+        for (String s: actual) {
             System.out.println(s);
         }
         System.out.println("------------------");
