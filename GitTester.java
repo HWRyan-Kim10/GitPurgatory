@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -217,26 +218,38 @@ public class GitTester {
     public static void main(String[] args){
         resetForRetest();
 
-        for (int i = 1; i <= 3; i++) {
+        // for (int i = 1; i <= 3; i++) {
             Git.init();
             verifyInit();
 
-            Git.createBlob("hello.txt");
-            Git.createBlob("world.txt");
+            String[] dogs = {"dajfioejaofid golden", "dafioejaifds wolf", "djofiasejfs panda"};
+            try {
+                Git.addTree(dogs);
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
-            verifyBlobExists("hello.txt");
-            verifyBlobExists("world.txt");
+            // Git.createBlob("hello.txt");
+            // Git.addToIndex("hello.txt");
+            // Git.createBlob("world.txt");
+            // Git.addToIndex("world.txt");
 
-            resetForRetest();
-        }
 
-        String hash = Git.sha1FromFile("shaone.txt");
-        System.out.println("SHA1 of file contents: " + hash);
+            // verifyBlobExists("hello.txt");
+            // verifyBlobExists("world.txt");
+        // }
 
-        runIndexSuite();
-        resetWorkspace();
-        runIndexSuite();
-        resetWorkspace();
+        // String hash = Git.sha1FromFile("shaone.txt");
+        // System.out.println("SHA1 of file contents: " + hash);
+
+        // runIndexSuite();
+        // resetWorkspace();
+        // runIndexSuite();
+        // resetWorkspace();
     }
 
 
