@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -214,6 +215,42 @@ public class Git {
             in.skip(file.length() - 1);
             return in.read() == '\n';
         }
+    }
+
+    public static void addTree(String [] entries) throws FileNotFoundException, IOException {
+        File tree = new File("tree");
+        tree.createNewFile();
+        for(String entry : entries) {
+            boolean endsWithNewline = false;
+            if (tree.length() > 0) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(tree))) {
+                    String line;
+                    String lastLine = null;
+                    while ((line = reader.readLine()) != null) {
+                        lastLine = line;
+                    }
+                    if (lastLine == null || lineEndsWithNewline(tree)) {
+                        endsWithNewline = true;
+                    }
+                }
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(tree, true))) {
+                if (tree.length() == 0) {
+                    writer.write(entry);
+                } 
+                else if (endsWithNewline) {
+                    writer.write(entry);
+                } 
+                else {
+                    writer.newLine();
+                    writer.write(entry);
+                }
+            }
+        }
+        createBlob("tree");
+        addToIndex("tree");
+        tree.delete();
     }
     
 }
