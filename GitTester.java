@@ -215,7 +215,7 @@ public class GitTester {
 
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws FileNotFoundException, IOException{
         resetForRetest();
 
         // for (int i = 1; i <= 3; i++) {
@@ -231,15 +231,7 @@ public class GitTester {
             Git.createBlob("testFiles/subFolder1/subFile1.txt");
             Git.createBlob("testFiles/subFolder1/subFile2.txt");
             
-            try {
-                Git.createTree();
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            Git.createTree();
 
             // Git.createBlob("hello.txt");
             // Git.addToIndex("hello.txt");

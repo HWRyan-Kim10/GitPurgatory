@@ -222,37 +222,63 @@ public class Git {
         }
     }
 
-    public static void createLeafTree(String workingListPath) throws IOException, NoSuchAlgorithmException {
-        
+    public static String hashOfTree(List<String> entries) throws FileNotFoundException, IOException {
+        File tree = new File("tree");
+        for(String entry : entries) {
+            boolean endsWithNewline = false;
+            if (tree.length() > 0) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(tree))) {
+                    String line;
+                    String lastLine = null;
+                    while ((line = reader.readLine()) != null) {
+                        lastLine = line;
+                    }
+                    if (lastLine == null || lineEndsWithNewline(tree)) {
+                        endsWithNewline = true;
+                    }
+                }
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(tree, true))) {
+                if (tree.length() == 0) {
+                    writer.write(entry);
+                } 
+                else if (endsWithNewline) {
+                    writer.write(entry);
+                } 
+                else {
+                    writer.newLine();
+                    writer.write(entry);
+                }
+            }
+        }
+        String hash = sha1FromFile("tree");
+        tree.delete();
+        return hash;
     }
 
     public static void createTree() throws FileNotFoundException, IOException {
         //make workinglist
-        File workingList = new File("workingList");
-        List<String> entries = new ArrayList<>();
+        List<String> workingList = new ArrayList<>();
         try (BufferedReader indexReader = new BufferedReader(new FileReader("git/index"))) {
             String entry;
             while ((entry = indexReader.readLine()) != null) {
-                entries.add("blob " + entry);
+                workingList.add("blob " + entry);
             }
         }
         //sort workinglist
-        entries.sort((a, b) -> {//got online
+        workingList.sort((a, b) -> {//got online
             String pathA = a.substring(a.indexOf(' ', 5) + 1);
             String pathB = b.substring(b.indexOf(' ', 5) + 1);
             return pathA.compareTo(pathB);
         });
-        //write workinglist
-        try (BufferedWriter workingListWriter = new BufferedWriter(new FileWriter(workingList))) {
-            for (int i = 0; i < entries.size(); i++) {
-                workingListWriter.write(entries.get(i));
-                if (i < entries.size() - 1) {
-                    workingListWriter.newLine();
-                }
-            }
-        }
-        
-        
 
+        while(workingList.size() != 1) {
+            List<String> subEntries = new ArrayList<>();
+            
+            //need to put everything thats in a leaf direcotry in subentries
+            //use the hash from hashoftree() to make a new entry thats tree hash filename
+            //make a new entries list without the ones in the directory and with the new directory
+        }
     }
 }
