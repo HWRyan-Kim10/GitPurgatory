@@ -288,6 +288,8 @@ public class Git {
             entries.remove(0);
         }
         addTree(entries.toArray(new String [entries.size()]));
+        createBlob("tree");
+        deleteTree();
         reader.close();
     }
 
