@@ -1,8 +1,6 @@
 .DS_Store
 *.txt
-.git
 git
 git/objects
-.vscode/settings.json
 testFiles/subFolder1/subfile
 git/index
