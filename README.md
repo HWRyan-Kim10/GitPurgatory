@@ -17,7 +17,6 @@
 - In the updated version of the project, I made a few key changes across both the Git and GitTester classes to make the workflow feel more complete. In the Git class, I added an addToIndex method that records each file’s SHA-1 hash alongside its name in the git/index file. The method was written to keep the file clean by avoiding trailing spaces or extra newlines and it uses buffered streams so it stays straightforward and reliable. In the GitTester class, the tests were expanded so they do more than just check initialization and blob creation. The tester now creates sample files, runs them through createBlob and addToIndex, and then verifies that the index contains the correct hash-to-filename mappings. A new resetWorkspace method was also added which clears out everything from previous runs, including the git folder and the test files, and then sets up a fresh repository with an empty index.
 
 2.5
-- deleteTree(): deletes the tree file that addTree makes
 - addTree(String [] entries): creates a "tree" file with the entries provided
 - createTree(String filepath): 
 

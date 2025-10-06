@@ -221,16 +221,18 @@ public class GitTester {
         // for (int i = 1; i <= 3; i++) {
             Git.init();
             verifyInit();
-            Git.deleteTree();
 
             // String[] dogs = {"blob dajfioejaofid golden", "blob dafioejaifds wolf", "blob djofiasejfs panda"};
             Git.createBlob("testFiles/f1.txt");
             Git.createBlob("testFiles/f2.txt");
             Git.createBlob("testFiles/f3.txt");
             Git.createBlob("testFiles/hello.txt");
+            Git.createBlob("testFiles/subFolder1/subFile");
+            Git.createBlob("testFiles/subFolder1/subFile1.txt");
+            Git.createBlob("testFiles/subFolder1/subFile2.txt");
             
             try {
-                Git.createTree("testFiles");
+                Git.createTree();
             } catch (FileNotFoundException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

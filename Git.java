@@ -14,7 +14,8 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Git {
@@ -221,81 +222,37 @@ public class Git {
         }
     }
 
-    public static void addTree(String [] entries) throws FileNotFoundException, IOException {
-        File tree = new File("tree");
-        tree.createNewFile();
-        for(String entry : entries) {
-            boolean endsWithNewline = false;
-            if (tree.length() > 0) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(tree))) {
-                    String line;
-                    String lastLine = null;
-                    while ((line = reader.readLine()) != null) {
-                        lastLine = line;
-                    }
-                    if (lastLine == null || lineEndsWithNewline(tree)) {
-                        endsWithNewline = true;
-                    }
-                }
-            }
-
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(tree, true))) {
-                if (tree.length() == 0) {
-                    writer.write(entry);
-                } 
-                else if (endsWithNewline) {
-                    writer.write(entry);
-                } 
-                else {
-                    writer.newLine();
-                    writer.write(entry);
-                }
-            }
-        }  
+    public static void createLeafTree(String workingListPath) throws IOException, NoSuchAlgorithmException {
+        
     }
 
-    public static void createTree(String filepath) throws FileNotFoundException, IOException {
-    //  File dir = new File(filepath);
-    //  File[] files = dir.listFiles();
-    //  String [] stringFiles = new String[files.length];
-    //  for(int i = 0; i < files.length; i++) {
-    //      String filePath = files[i].getPath();
-    //      String entry = sha1FromFile(filePath) + " " + filePath;
-    //      if(files[i].isFile()) {
-    //          createBlob(filePath);
-    //          stringFiles[i] = "blob " + entry;
-    //       } else {
-    //          stringFiles[i] = "tree " + entry;
-    //      }
-    //  }
-    //  addTree(stringFiles);
-        BufferedReader reader = new BufferedReader(new FileReader("git/index"));
-        List<String> entries = new LinkedList<>();
-        while (reader.ready()) {
-            String entry = reader.readLine();
-            if(entry.contains(filepath)) {
-                entries.add(entry);
+    public static void createTree() throws FileNotFoundException, IOException {
+        //make workinglist
+        File workingList = new File("workingList");
+        List<String> entries = new ArrayList<>();
+        try (BufferedReader indexReader = new BufferedReader(new FileReader("git/index"))) {
+            String entry;
+            while ((entry = indexReader.readLine()) != null) {
+                entries.add("blob " + entry);
+            }
+        }
+        //sort workinglist
+        entries.sort((a, b) -> {//got online
+            String pathA = a.substring(a.indexOf(' ', 5) + 1);
+            String pathB = b.substring(b.indexOf(' ', 5) + 1);
+            return pathA.compareTo(pathB);
+        });
+        //write workinglist
+        try (BufferedWriter workingListWriter = new BufferedWriter(new FileWriter(workingList))) {
+            for (int i = 0; i < entries.size(); i++) {
+                workingListWriter.write(entries.get(i));
+                if (i < entries.size() - 1) {
+                    workingListWriter.newLine();
+                }
             }
         }
         
-        for(int i = 0; i < entries.size(); i++) {
-            String entry = entries.get(0);
-            String subfilePath = entry.substring(entry.indexOf(' '));
-            File subfile = new File(subfilePath.substring(1));
-            if(subfile.isFile()) {
-                entries.add("blob " + entry);
-            } else entries.add("tree " + entry);
-            entries.remove(0);
-        }
-        addTree(entries.toArray(new String [entries.size()]));
-        createBlob("tree");
-        deleteTree();
-        reader.close();
-    }
+        
 
-    public static void deleteTree() {
-        File tree = new File("tree");
-        tree.delete();
-        System.out.println("Tree file deleted.");
     }
 }
