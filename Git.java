@@ -222,42 +222,51 @@ public class Git {
         }
     }
 
-    public static String hashOfTree(List<String> entries) throws FileNotFoundException, IOException {
-        File tree = new File("tree");
-        for(String entry : entries) {
-            boolean endsWithNewline = false;
-            if (tree.length() > 0) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(tree))) {
-                    String line;
-                    String lastLine = null;
-                    while ((line = reader.readLine()) != null) {
-                        lastLine = line;
-                    }
-                    if (lastLine == null || lineEndsWithNewline(tree)) {
-                        endsWithNewline = true;
-                    }
-                }
-            }
+    public static String hashOfTree(List<String> entries) throws IOException {
+        entries.sort(Comparator.comparing(e -> e.split(" ", 3)[2]));
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(tree, true))) {
-                if (tree.length() == 0) {
-                    writer.write(entry);
-                } 
-                else if (endsWithNewline) {
-                    writer.write(entry);
-                } 
-                else {
+        File tree = new File("tree");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tree))) {
+            for (int i = 0; i < entries.size(); i++) {
+                writer.write(entries.get(i));
+                if (i < entries.size() - 1) {
                     writer.newLine();
-                    writer.write(entry);
                 }
             }
         }
+
         String hash = sha1FromFile("tree");
         tree.delete();
         return hash;
     }
 
-    public static void createTree() throws FileNotFoundException, IOException {
+    public static List<String> returnSortedWorkingList(List<String> workingList) {//got online
+        workingList.sort((a, b) -> {
+            String[] partsA = a.split(" ", 3);
+            String[] partsB = b.split(" ", 3);
+            if (partsA.length < 3 || partsB.length < 3)
+                throw new IllegalArgumentException("Invalid entry format: must be 'filetype hash filepath'");
+
+            String pathA = partsA[2];
+            String pathB = partsB[2];
+
+            int depthA = pathA.length() - pathA.replace("/", "").length();
+            int depthB = pathB.length() - pathB.replace("/", "").length();
+
+            if (depthA != depthB) {
+                return Integer.compare(depthB, depthA);
+            }
+            return pathA.compareTo(pathB);
+        });
+        return workingList;
+    }
+
+    private static String subPath(String path) {
+        int lastSlash = path.lastIndexOf('/');
+        return (lastSlash == -1) ? "" : path.substring(0, lastSlash);
+    }
+
+    public static String treeFromIndex() throws FileNotFoundException, IOException {
         //make workinglist
         List<String> workingList = new ArrayList<>();
         try (BufferedReader indexReader = new BufferedReader(new FileReader("git/index"))) {
@@ -266,19 +275,28 @@ public class Git {
                 workingList.add("blob " + entry);
             }
         }
+        if(workingList.size() == 0) {
+            System.out.println("Working list empty.");
+            return null;
+        }
         //sort workinglist
-        workingList.sort((a, b) -> {//got online
-            String pathA = a.substring(a.indexOf(' ', 5) + 1);
-            String pathB = b.substring(b.indexOf(' ', 5) + 1);
-            return pathA.compareTo(pathB);
-        });
-
+        workingList = returnSortedWorkingList(workingList);
+        
         while(workingList.size() != 1) {
             List<String> subEntries = new ArrayList<>();
-            
-            //need to put everything thats in a leaf direcotry in subentries
-            //use the hash from hashoftree() to make a new entry thats tree hash filename
-            //make a new entries list without the ones in the directory and with the new directory
+            String folderPath = subPath(workingList.get(0));
+            while(!workingList.isEmpty() && subPath(workingList.get(0)).equals(folderPath)) {
+                subEntries.add(workingList.get(0));
+                workingList.remove(0);
+            }
+            String treeHash = hashOfTree(subEntries);
+            String subTree = "tree " + treeHash + " " + folderPath;
+            workingList.add(subTree);
+            File subTreeObject = new File("git/objects/" + treeHash);
+            subTreeObject.createNewFile();
+            workingList = returnSortedWorkingList(workingList);
         }
+        
+        return workingList.get(0) + "GitPurgatory";
     }
 }

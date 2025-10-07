@@ -231,7 +231,7 @@ public class GitTester {
             Git.createBlob("testFiles/subFolder1/subFile1.txt");
             Git.createBlob("testFiles/subFolder1/subFile2.txt");
             
-            Git.createTree();
+            System.out.println(Git.treeFromIndex());
 
             // Git.createBlob("hello.txt");
             // Git.addToIndex("hello.txt");
