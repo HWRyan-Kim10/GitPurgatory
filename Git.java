@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -12,6 +13,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class Git {
 
@@ -117,6 +122,7 @@ public class Git {
             }
     
             copyContent(new File(filePath), blobFile);
+            addToIndex(filePath);
     
             System.out.println("Blob created: " + hash);
         } 
@@ -215,5 +221,82 @@ public class Git {
             return in.read() == '\n';
         }
     }
-    
+
+    public static String hashOfTree(List<String> entries) throws IOException {
+        entries.sort(Comparator.comparing(e -> e.split(" ", 3)[2]));
+
+        File tree = new File("tree");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tree))) {
+            for (int i = 0; i < entries.size(); i++) {
+                writer.write(entries.get(i));
+                if (i < entries.size() - 1) {
+                    writer.newLine();
+                }
+            }
+        }
+
+        String hash = sha1FromFile("tree");
+        tree.delete();
+        return hash;
+    }
+
+    public static List<String> returnSortedWorkingList(List<String> workingList) {//got online
+        workingList.sort((a, b) -> {
+            String[] partsA = a.split(" ", 3);
+            String[] partsB = b.split(" ", 3);
+            if (partsA.length < 3 || partsB.length < 3)
+                throw new IllegalArgumentException("Invalid entry format: must be 'filetype hash filepath'");
+
+            String pathA = partsA[2];
+            String pathB = partsB[2];
+
+            int depthA = pathA.length() - pathA.replace("/", "").length();
+            int depthB = pathB.length() - pathB.replace("/", "").length();
+
+            if (depthA != depthB) {
+                return Integer.compare(depthB, depthA);
+            }
+            return pathA.compareTo(pathB);
+        });
+        return workingList;
+    }
+
+    private static String subPath(String path) {
+        int lastSlash = path.lastIndexOf('/');
+        return (lastSlash == -1) ? "" : path.substring(0, lastSlash);
+    }
+
+    public static String treeFromIndex() throws FileNotFoundException, IOException {
+        //make workinglist
+        List<String> workingList = new ArrayList<>();
+        try (BufferedReader indexReader = new BufferedReader(new FileReader("git/index"))) {
+            String entry;
+            while ((entry = indexReader.readLine()) != null) {
+                workingList.add("blob " + entry);
+            }
+        }
+        if(workingList.size() == 0) {
+            System.out.println("Working list empty.");
+            return null;
+        }
+        //sort workinglist
+        workingList = returnSortedWorkingList(workingList);
+        
+        while(workingList.size() != 1) {
+            List<String> subEntries = new ArrayList<>();
+            String folderPath = subPath(workingList.get(0));
+            while(!workingList.isEmpty() && subPath(workingList.get(0)).equals(folderPath)) {
+                subEntries.add(workingList.get(0));
+                workingList.remove(0);
+            }
+            String treeHash = hashOfTree(subEntries);
+            String subTree = "tree " + treeHash + " " + folderPath;
+            workingList.add(subTree);
+            File subTreeObject = new File("git/objects/" + treeHash);
+            subTreeObject.createNewFile();
+            workingList = returnSortedWorkingList(workingList);
+        }
+        
+        return workingList.get(0) + "GitPurgatory";
+    }
 }

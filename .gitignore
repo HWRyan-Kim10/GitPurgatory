@@ -1,0 +1,6 @@
+.DS_Store
+*.txt
+git
+git/objects
+testFiles/subFolder1/subfile
+git/index
