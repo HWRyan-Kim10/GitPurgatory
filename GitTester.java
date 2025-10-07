@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -214,29 +215,41 @@ public class GitTester {
 
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws FileNotFoundException, IOException{
         resetForRetest();
 
-        for (int i = 1; i <= 3; i++) {
+        // for (int i = 1; i <= 3; i++) {
             Git.init();
             verifyInit();
 
-            Git.createBlob("hello.txt");
-            Git.createBlob("world.txt");
+            // String[] dogs = {"blob dajfioejaofid golden", "blob dafioejaifds wolf", "blob djofiasejfs panda"};
+            Git.createBlob("testFiles/f1.txt");
+            Git.createBlob("testFiles/f2.txt");
+            Git.createBlob("testFiles/f3.txt");
+            Git.createBlob("testFiles/hello.txt");
+            Git.createBlob("testFiles/subFolder1/subFile");
+            Git.createBlob("testFiles/subFolder1/subFile1.txt");
+            Git.createBlob("testFiles/subFolder1/subFile2.txt");
+            
+            System.out.println(Git.treeFromIndex());
 
-            verifyBlobExists("hello.txt");
-            verifyBlobExists("world.txt");
+            // Git.createBlob("hello.txt");
+            // Git.addToIndex("hello.txt");
+            // Git.createBlob("world.txt");
+            // Git.addToIndex("world.txt");
 
-            resetForRetest();
-        }
 
-        String hash = Git.sha1FromFile("shaone.txt");
-        System.out.println("SHA1 of file contents: " + hash);
+            // verifyBlobExists("hello.txt");
+            // verifyBlobExists("world.txt");
+        // }
 
-        runIndexSuite();
-        resetWorkspace();
-        runIndexSuite();
-        resetWorkspace();
+        // String hash = Git.sha1FromFile("shaone.txt");
+        // System.out.println("SHA1 of file contents: " + hash);
+
+        // runIndexSuite();
+        // resetWorkspace();
+        // runIndexSuite();
+        // resetWorkspace();
     }
 
 
